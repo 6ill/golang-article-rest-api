@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_authors_name ON authors(name);
