@@ -9,6 +9,7 @@ import (
 
 type ArticleController interface {
 	CreateArticle(c *fiber.Ctx) error
+	GetArticles(c *fiber.Ctx) error
 }
 
 type ArticleControllerImpl struct {
@@ -39,5 +40,27 @@ func (co *ArticleControllerImpl) CreateArticle(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(helper.ResponseCreate{
 		Message: "Your article has been created!",
 		Data:    *res,
+	})
+}
+
+func (co *ArticleControllerImpl) GetArticles(c *fiber.Ctx) error {
+	ctx := c.Context()
+
+	filters := new(model.ArticleFilter)
+	if err := c.QueryParser(filters); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"errors": []string{err.Error()},
+		})
+	}
+
+	res, errMsg := co.service.GetArticles(ctx, *filters)
+	if errMsg != nil {
+		return c.Status(errMsg.Code).JSON(fiber.Map{
+			"errors": []string{errMsg.Err.Error()},
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(helper.ResponseGetAll{
+		Data: res,
 	})
 }

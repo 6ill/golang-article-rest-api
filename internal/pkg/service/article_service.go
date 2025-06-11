@@ -14,7 +14,7 @@ import (
 
 type ArticleService interface {
 	CreateArticle(ctx context.Context, params model.CreateArticleRequest) (*model.Article, *helper.ErrorStruct)
-	// GetArticles(ctx context.Context, authorName, searchQuery string, limit, offset int) ([]model.Article, *helper.ErrorStruct)
+	GetArticles(ctx context.Context, filters model.ArticleFilter) ([]model.Article, *helper.ErrorStruct)
 }
 
 type ArticleServiceImpl struct {
@@ -47,6 +47,14 @@ func (s *ArticleServiceImpl) CreateArticle(ctx context.Context, params model.Cre
 	return article, nil
 }
 
-// func (s *ArticleServiceImpl) GetArticles(ctx context.Context, authorName string, searchQuery string, limit int, offset int) ([]model.Article, *helper.ErrorStruct) {
-// 	articles, err := s.repo.
-// }
+func (s *ArticleServiceImpl) GetArticles(ctx context.Context, filters model.ArticleFilter) ([]model.Article, *helper.ErrorStruct) {
+	articles, err := s.repo.GetArticles(ctx, filters)
+	if err != nil {
+		return nil, &helper.ErrorStruct{
+			Err:  err,
+			Code: fiber.StatusInternalServerError,
+		}
+	}
+
+	return articles, nil
+}

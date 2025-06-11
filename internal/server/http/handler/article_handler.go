@@ -11,4 +11,5 @@ func ArticleHandler(r fiber.Router, articleService service.ArticleService) {
 
 	api := r.Group("/article")
 	api.Post("/", controller.CreateArticle)
+	api.Get("/", controller.GetArticles)
 }

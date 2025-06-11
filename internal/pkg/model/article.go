@@ -15,3 +15,8 @@ type CreateArticleRequest struct {
 	Body     string `json:"body" validate:"required"`
 	AuthorID string `json:"author_id" validate:"required,uuid4"`
 }
+
+type ArticleFilter struct {
+	Query      string `query:"query" validate:"omitempty"`
+	AuthorName string `query:"author" validate:"omitempty"`
+}

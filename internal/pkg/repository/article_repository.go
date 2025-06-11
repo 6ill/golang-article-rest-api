@@ -3,12 +3,14 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/6ill/go-article-rest-api/internal/pkg/model"
 )
 
 type ArticleRepo interface {
 	CreateArticle(ctx context.Context, article model.CreateArticleRequest) (*model.Article, error)
+	GetArticles(ctx context.Context, filters model.ArticleFilter) ([]model.Article, error)
 }
 
 type ArticleRepoImpl struct {
@@ -50,4 +52,41 @@ func (r *ArticleRepoImpl) CreateArticle(ctx context.Context, article model.Creat
 	}
 
 	return &newArticle, nil
+}
+
+func (r *ArticleRepoImpl) GetArticles(ctx context.Context, filters model.ArticleFilter) (articles []model.Article, err error) {
+	query := `
+        SELECT a.id, a.title, a.body, a.created_at, au.id, au.name
+        FROM articles a
+        JOIN authors au ON a.author_id = au.id
+        WHERE
+            ($1 = '' OR au.name ILIKE '%' || $1 || '%')
+            AND
+            ($2 = '' OR to_tsvector('simple', a.title || ' ' || a.body) @@ plainto_tsquery('simple', $2))
+        ORDER BY a.created_at DESC
+    `
+
+	fmt.Printf("\nquery: %+v\n", filters)
+
+	args := []any{filters.AuthorName, filters.Query}
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var article model.Article
+		if err := rows.Scan(&article.ID, &article.Title, &article.Body, &article.CreatedAt, &article.Author.ID, &article.Author.Name); err != nil {
+			return nil, fmt.Errorf("failed to scan article row: %w", err)
+		}
+		articles = append(articles, article)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error during row iteration: %w", err)
+	}
+
+	return articles, nil
 }

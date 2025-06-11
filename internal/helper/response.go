@@ -8,6 +8,5 @@ type ResponseCreate struct {
 }
 
 type ResponseGetAll struct {
-	Message string          `json:"message"`
-	Data    []model.Article `json:"data"`
+	Data []model.Article `json:"data"`
 }
