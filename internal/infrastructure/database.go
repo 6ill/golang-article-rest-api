@@ -19,6 +19,14 @@ func DatabaseInit(v *viper.Viper) *sql.DB {
 		helper.Logger(helper.LoggerLevelPanic, "Unable to connect database", err)
 	}
 
+	db.SetMaxOpenConns(v.GetInt("MAX_OPEN_CONNS"))
+	db.SetMaxIdleConns(v.GetInt("MAX_IDLE_CONNS"))
+	duration, err := time.ParseDuration(v.GetString("MAX_IDLE_TIME"))
+	if err != nil {
+		duration = 15 * time.Minute
+	}
+	db.SetConnMaxIdleTime(duration)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
