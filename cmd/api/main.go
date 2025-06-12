@@ -11,6 +11,7 @@ import (
 	api "github.com/6ill/go-article-rest-api/internal/server/http"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 func main() {
@@ -18,6 +19,7 @@ func main() {
 
 	app := fiber.New()
 	app.Use(logger.New())
+	app.Use(recover.New())
 
 	api.HttpRouteInit(app, container)
 	port := fmt.Sprintf("%s:%d", container.App.ServerHost, container.App.ServerPort)
