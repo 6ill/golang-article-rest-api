@@ -48,6 +48,13 @@ func (s *ArticleServiceImpl) CreateArticle(ctx context.Context, params model.Cre
 }
 
 func (s *ArticleServiceImpl) GetArticles(ctx context.Context, filters model.ArticleFilter) ([]model.Article, *helper.ErrorStruct) {
+	filters.Page = max(filters.Page, 1)
+	if filters.PageSize <= 0 {
+		filters.PageSize = 10
+	}
+
+	fmt.Printf("\nfilter yang dibersihkan: %+v\n", filters)
+
 	articles, err := s.repo.GetArticles(ctx, filters)
 	if err != nil {
 		return nil, &helper.ErrorStruct{

@@ -64,11 +64,12 @@ func (r *ArticleRepoImpl) GetArticles(ctx context.Context, filters model.Article
             AND
             ($2 = '' OR to_tsvector('simple', a.title || ' ' || a.body) @@ plainto_tsquery('simple', $2))
         ORDER BY a.created_at DESC
+		LIMIT $3 OFFSET $4	
     `
 
-	fmt.Printf("\nquery: %+v\n", filters)
+	offset := (filters.Page - 1) * filters.PageSize
 
-	args := []any{filters.AuthorName, filters.Query}
+	args := []any{filters.AuthorName, filters.Query, filters.PageSize, offset}
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {

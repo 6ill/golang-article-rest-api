@@ -19,4 +19,6 @@ type CreateArticleRequest struct {
 type ArticleFilter struct {
 	Query      string `query:"query" validate:"omitempty"`
 	AuthorName string `query:"author" validate:"omitempty"`
+	Page       int    `query:"page" validate:"omitempty,gte=1"`
+	PageSize   int    `query:"page_size" validate:"omitempty,gte=1,lte=100"`
 }
