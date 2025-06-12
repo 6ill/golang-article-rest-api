@@ -9,8 +9,8 @@ import (
 	"net/http/httptest"
 	"os"
 	"reflect"
-	"strings"
 	"testing"
+	"time"
 
 	"github.com/6ill/go-article-rest-api/internal/helper"
 	"github.com/6ill/go-article-rest-api/internal/infrastructure"
@@ -150,8 +150,11 @@ func TestGetArticles(t *testing.T) {
 		err = json.NewDecoder(resp.Body).Decode(&responseBody)
 		assert.NoError(t, err)
 
+		length := len(expectedResponse)
+
 		for i := range responseBody.Data {
-			if !compareArticles(t, expectedResponse[i], responseBody.Data[i]) {
+			// Remember GET article  returned in descending order
+			if !compareArticles(t, expectedResponse[length-i-1], responseBody.Data[i]) {
 				t.Errorf("should return expected articles but got %+v", responseBody.Data)
 			}
 		}
@@ -169,8 +172,11 @@ func TestGetArticles(t *testing.T) {
 		err = json.NewDecoder(resp.Body).Decode(&responseBody)
 		assert.NoError(t, err)
 
+		length := len(expectedResponse)
+
 		for i := range responseBody.Data {
-			if !compareArticles(t, expectedResponse[i], responseBody.Data[i]) {
+			// Remember GET article  returned in descending order
+			if !compareArticles(t, expectedResponse[length-i-1], responseBody.Data[i]) {
 				t.Errorf("should return expected articles but got %+v", responseBody.Data)
 			}
 		}
@@ -189,8 +195,11 @@ func TestGetArticles(t *testing.T) {
 		err = json.NewDecoder(resp.Body).Decode(&responseBody)
 		assert.NoError(t, err)
 
+		length := len(expectedResponse)
+
 		for i := range responseBody.Data {
-			if !compareArticles(t, expectedResponse[i], responseBody.Data[i]) {
+			// Remember GET article  returned in descending order
+			if !compareArticles(t, expectedResponse[length-i-1], responseBody.Data[i]) {
 				t.Errorf("should return expected articles but got %+v", responseBody.Data)
 			}
 		}
@@ -212,16 +221,16 @@ func TestGetArticles(t *testing.T) {
 }
 
 func setupArticles() error {
-	var values []string
-
+	// Ensure the articles are inserted in order.
 	for _, article := range testArticles {
-		values = append(values, fmt.Sprintf("('%s','%s','%s')", article.Title, article.Body, article.Author.ID))
+		args := []any{article.Title, article.Body, article.Author.ID}
+		_, err := container.Db.Exec("INSERT INTO articles (title, body, author_id) VALUES ($1, $2, $3)", args...)
+		if err != nil {
+			return err
+		}
+		time.Sleep(50 * time.Millisecond)
 	}
-
-	valueStrings := strings.Join(values, ",")
-
-	_, err := container.Db.Exec("INSERT INTO articles (title, body, author_id) VALUES " + valueStrings)
-	return err
+	return nil
 }
 
 func cleanupTestData() {

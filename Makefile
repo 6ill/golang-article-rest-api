@@ -1,7 +1,5 @@
 include .env
 
-APP_NAME=go_article_api_app
-
 .PHONY: confirm
 confirm:
 	@echo -n 'Are you sure? [y/N] ' && read ans && [ $${ans:-N} = y ]
@@ -24,4 +22,4 @@ db/migrations/up/test: confirm
 .PHONY: test
 test:
 	@echo 'Running testings...'
-	docker exec $(APP_NAME) go test -v ./internal/tests/...
+	docker exec ${APP_NAME} go test -v ./internal/tests/...
